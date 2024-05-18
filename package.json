@@ -11,6 +11,7 @@
     "@types/react": "^18.0.12",
     "@types/react-dom": "^18.0.5",
     "bootstrap": "^5.3.3",
+    "d3": "^7.9.0",
     "downloadjs": "^1.4.7",
     "fitsjs": "^0.6.6",
     "html-to-image": "^1.9.0",
@@ -48,6 +49,7 @@
     ]
   },
   "devDependencies": {
+    "@types/d3": "^7.4.3",
     "@types/downloadjs": "^1.4.3"
   }
 }

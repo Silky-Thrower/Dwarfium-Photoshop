@@ -42,14 +42,15 @@ code {
 }
 .canvas-container {
     width: auto;
-    margin-top:6%;
+    height: fit-content;
+    margin-top: 6%;
 }
 .tiff-canvas {
     max-width: 100%; /* Limit canvas width */
     max-height: 80vh; /* Limit canvas height */
     display: block; /* Ensure canvas is block-level */
     margin: 0 auto; /* Center canvas horizontally */
-    margin-top: 40px;
+    margin-top: 74px;
 }
 .main-image {
     grid-area: image;
@@ -136,18 +137,19 @@ code {
 
 .download {
     border: none;
-    outline: none;
+    /* outline: none; */
     background: #00B280;
     font-size: 20px;
     color: white;
-    padding: 10px 40px;
-    margin-top: -5px;
+    /* padding: 10px 40px; */
+    margin-top: 120px;
+    position: relative;
+    height: fit-content;
 }
-
 .slider-container {
-  grid-area: slider;
-  padding: 2rem;
-  margin-top: -2rem;
+    grid-area: slider;
+    padding: 0rem;
+    margin-top: 2rem;
 }
 
 .slider {
@@ -222,3 +224,32 @@ code {
         .text-input button:hover {
             background-color: #218838;
         }
+.button-color{
+
+    margin-top:0px;
+}
+.sidebar {
+    width: 250px; /* Adjust as needed */
+    background-color: #f0f0f0;
+    padding: 20px;
+    border: 1px solid #ccc;
+    height: fit-content;
+}
+
+.download {
+    width: 100%;
+   
+}
+
+.slider {
+    margin-bottom: 10px;
+}
+
+.button-color {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.text-layer {
+    margin-top: -115px;
+}

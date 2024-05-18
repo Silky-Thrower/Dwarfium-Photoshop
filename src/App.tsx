@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, ChangeEvent, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 import NavbarMenu from './components/Navbar';
@@ -9,6 +9,7 @@ import * as htmlToImage from 'html-to-image';
 import * as download from 'downloadjs';
 import * as UTIF from 'utif';
 import TextLayer from './components/TextLayer';
+
 
 const DEFAULT_OPTIONS: OptionsType[] = [
     {
@@ -169,7 +170,7 @@ export interface Range {
 function App() {
     const [options, setOptions] = useState<OptionsType[]>(DEFAULT_OPTIONS);
     const [selectedOptionIndex, setSelectedOptionIndex] = useState<number>(Infinity);
-    const [image, setImage] = useState<null | string>(null);
+    const [image, setImage] = useState<string | null>(null);
     const [isTiff, setIsTiff] = useState<boolean>(false);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [isAddingText, setIsAddingText] = useState(false);
@@ -354,26 +355,35 @@ function App() {
                         handleClick={() => setSelectedOptionIndex(index)}
                     />
                 ))}
+                
+            </div>
+            <div className="sidebar">
                 <button className="download" onClick={downloadImage}>
                     Download
                 </button>
+                <div className="text-layer">
+                    <TextLayer canvasRef={canvasRef} isAddingText={isAddingText} setIsAddingText={setIsAddingText} />
+                </div><br />
+                {selectedOption && selectedOption.property !== 'shadowColor' && (
+                    <Slider
+                        min={selectedOption.range.min}
+                        max={selectedOption.range.max}
+                        value={Number(selectedOption.value)}
+                        handleChange={handleSliderChange}
+                    />
+                )}
+
+                {selectedOption && selectedOption.property === 'shadowColor' && (
+                    <input
+                        type="color"
+                        className="button-color"
+                        value={String(selectedOption.value)}
+                        onChange={handleColorChange}
+                    />
+                )}
+
+                
             </div>
-            {selectedOption && selectedOption.property !== 'shadowColor' && (
-                <Slider
-                    min={selectedOption.range.min}
-                    max={selectedOption.range.max}
-                    value={Number(selectedOption.value)}
-                    handleChange={handleSliderChange}
-                />
-            )}
-            {selectedOption && selectedOption.property === 'shadowColor' && (
-                <input
-                    type="color"
-                    value={String(selectedOption.value)}
-                    onChange={handleColorChange}
-                />
-            )}
-            <TextLayer canvasRef={canvasRef} isAddingText={isAddingText} setIsAddingText={setIsAddingText} />
         </div>
     );
 }
