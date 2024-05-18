@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, ChangeEvent, useCallback } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 import NavbarMenu from './components/Navbar';
@@ -8,6 +8,7 @@ import { FITS } from 'fitsjs';
 import * as htmlToImage from 'html-to-image';
 import * as download from 'downloadjs';
 import * as UTIF from 'utif';
+import TextLayer from './components/TextLayer';
 
 const DEFAULT_OPTIONS: OptionsType[] = [
     {
@@ -171,6 +172,7 @@ function App() {
     const [image, setImage] = useState<null | string>(null);
     const [isTiff, setIsTiff] = useState<boolean>(false);
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [isAddingText, setIsAddingText] = useState(false);
 
     const selectedOption = options[selectedOptionIndex];
 
@@ -200,7 +202,7 @@ function App() {
         setOptions(newOptions);
     };
 
-    const applyFilters = () => {
+    const applyFilters = useCallback(() => {
         const shadowX = options.find(option => option.property === 'shadowX')?.value || 0;
         const shadowY = options.find(option => option.property === 'shadowY')?.value || 0;
         const shadowBlur = options.find(option => option.property === 'shadowBlur')?.value || 0;
@@ -208,7 +210,7 @@ function App() {
         const sharpen = options.find(option => option.property === 'sharpen')?.value || 100;
 
         const filters = options.map((option) => {
-            if (option.property === 'shadowX' || option.property === 'shadowY' || option.property === 'shadowBlur' || option.property === 'shadowColor' || option.property === 'sharpen') {
+            if (['shadowX', 'shadowY', 'shadowBlur', 'shadowColor', 'sharpen'].includes(option.property)) {
                 return null;
             }
             return `${option.property}(${option.value}${option.unit})`;
@@ -224,12 +226,12 @@ function App() {
             filter: [...filters, shadowFilter].join(' '),
             backgroundImage: !isTiff ? `url(${image})` : '',
         };
-    };
+    }, [options, isTiff, image]);
 
     const downloadImage = () => {
         htmlToImage
             .toPng(document.getElementById('image') as HTMLElement)
-            .then(function (dataUrl: any) {
+            .then((dataUrl) => {
                 download.default(dataUrl, `${Date.now()}.png`);
             });
     };
@@ -255,14 +257,16 @@ function App() {
                     const canvas = canvasRef.current;
                     if (canvas) {
                         const ctx = canvas.getContext('2d');
-                        canvas.width = firstImage.width;
-                        canvas.height = firstImage.height;
-                        const imageData = ctx?.createImageData(firstImage.width, firstImage.height);
-                        if (imageData) {
-                            for (let i = 0; i < imageData.data.length; i++) {
-                                imageData.data[i] = rgba[i];
+                        if (ctx) {
+                            canvas.width = firstImage.width;
+                            canvas.height = firstImage.height;
+                            const imageData = ctx.createImageData(firstImage.width, firstImage.height);
+                            if (imageData) {
+                                for (let i = 0; i < imageData.data.length; i++) {
+                                    imageData.data[i] = rgba[i];
+                                }
+                                ctx.putImageData(imageData, 0, 0);
                             }
-                            ctx?.putImageData(imageData, 0, 0);
                         }
                     }
                 }
@@ -278,20 +282,22 @@ function App() {
             const canvas = canvasRef.current;
             if (canvas) {
                 const ctx = canvas.getContext('2d');
-                canvas.width = imageData.width;
-                canvas.height = imageData.height;
+                if (ctx) {
+                    canvas.width = imageData.width;
+                    canvas.height = imageData.height;
 
-                // Convert imageData to Uint8ClampedArray
-                const clampedArray = new Uint8ClampedArray(imageData);
+                    // Convert imageData to Uint8ClampedArray
+                    const clampedArray = new Uint8ClampedArray(imageData.buffer);
 
-                // Create ImageData object
-                const imageDataObj = new ImageData(clampedArray, imageData.width, imageData.height);
+                    // Create ImageData object
+                    const imageDataObj = new ImageData(clampedArray, imageData.width, imageData.height);
 
-                // Clear canvas before rendering
-                ctx?.clearRect(0, 0, canvas.width, canvas.height);
+                    // Clear canvas before rendering
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                // Render image data on canvas
-                ctx?.putImageData(imageDataObj, 0, 0);
+                    // Render image data on canvas
+                    ctx.putImageData(imageDataObj, 0, 0);
+                }
             }
         } else {
             setIsTiff(false);
@@ -300,28 +306,46 @@ function App() {
     };
 
     useEffect(() => {
-        if (isTiff && canvasRef.current) {
-            canvasRef.current.style.filter = applyFilters().filter;
+        const canvas = canvasRef.current;
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.filter = applyFilters().filter;
+            }
+
+            if (!isTiff && image) {
+                const img = new Image();
+                img.src = image;
+                img.onload = () => {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    if (ctx) {
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        ctx.filter = applyFilters().filter;
+                    }
+                };
+            }
         }
-    }, [options, isTiff]); // Include options and isTiff in the dependency array
+    }, [options, isTiff, image, applyFilters]);
 
     return (
-       
-        <div className='container'>
+        <div className="container">
             <NavbarMenu />
-            <div className='canvas-container'>
+            <div className="canvas-container">
                 {image || isTiff ? (
-                    <div className='main-image' style={applyFilters()} id='image'>
-                        {isTiff && <canvas ref={canvasRef} className='tiff-canvas' />}
+                    <div className="main-image" style={applyFilters()} id="image">
+                        <canvas ref={canvasRef} className="tiff-canvas" />
                     </div>
                 ) : (
-                    <div className='upload-image'>
-                            <img src="/DWARFLAB_LOGO_Green.png" className="logo"alt="Light Logo" /> <h1>Quick PhotoEditor</h1>
-                            <input type='file' accept='image/*,.fits' onChange={handleImage} />
+                    <div className="upload-image">
+                        <img src="/DWARFLAB_LOGO_Green.png" className="logo" alt="Light Logo" />
+                        <h1>Quick PhotoEditor</h1>
+                        <input type="file" accept="image/*,.fits" onChange={handleImage} />
                     </div>
                 )}
             </div>
-            <div className='second-bar'>
+            <div className="second-bar">
                 {options?.map((option, index) => (
                     <SidebarItem
                         key={index}
@@ -330,7 +354,7 @@ function App() {
                         handleClick={() => setSelectedOptionIndex(index)}
                     />
                 ))}
-                <button className='download' onClick={downloadImage}>
+                <button className="download" onClick={downloadImage}>
                     Download
                 </button>
             </div>
@@ -349,11 +373,9 @@ function App() {
                     onChange={handleColorChange}
                 />
             )}
+            <TextLayer canvasRef={canvasRef} isAddingText={isAddingText} setIsAddingText={setIsAddingText} />
         </div>
     );
-
 }
 
 export default App;
-
-
