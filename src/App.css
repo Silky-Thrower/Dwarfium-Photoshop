@@ -1,0 +1,183 @@
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #9ec9c3;
+}
+code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+*,
+*:before,
+*:after {
+    box-sizing: border-box;
+}
+
+/* App.css */
+
+.App {
+    text-align: center;
+}
+
+.content {
+    padding-top: 96px; /* Adjust padding to account for the fixed navbar and second bar */
+    margin: 20px;
+}
+
+/* Additional styling as needed */
+.logo {
+    margin-top:80px
+}
+
+.container {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: 1fr auto;
+    grid-template-areas: 'image sidebar' 'slider sidebar';
+    height: 100vh;
+    width: 99vw;
+    /*background-color: #9ec9c3;*/
+}
+.canvas-container {
+    width: auto;
+    margin-top:6%;
+}
+.tiff-canvas {
+    max-width: 100%; /* Limit canvas width */
+    max-height: 80vh; /* Limit canvas height */
+    display: block; /* Ensure canvas is block-level */
+    margin: 0 auto; /* Center canvas horizontally */
+    margin-top: 40px;
+}
+.main-image {
+    grid-area: image;
+    /* background-image: url(https://unsplash.it/500/300?random=1); */
+    /* background-image: url('./assets/unsplash.jpg'); */
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: top center;
+    width: 100%;
+    height: 80vh;
+    margin-top: 40px;
+}
+
+.upload-image {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+    .upload-image > h1 {
+        color: purple;
+        font-size: 5rem;
+        margin-top: 50px;
+    }
+
+.upload-image > input {
+  font-size: 1.4rem;
+  margin-left: 2rem;
+}
+
+@media only screen and (max-width: 900px) {
+  .upload-image > h1 {
+    font-size: 1rem;
+  }
+
+  .upload-image > input {
+    font-size: 0.5rem;
+  }
+}
+
+/*.second-bar {
+    grid-area: sidebar;
+    background-color: hsl(135.69deg 54.11% 60.53%);
+    border-left: 1px solid hsl(265, 100%, 56%);
+    display: flex;
+    align-items: stretch;
+    flex-direction: column;
+}
+*/
+.second-bar-item {
+    cursor: pointer;
+    border: none;
+    outline: none;
+    background-color: #00B280;
+    padding: 1rem;
+    position: relative;
+    transition: background-color 0.2s ease-in-out;
+}
+
+    .second-bar-item:hover,
+    .second-bar-item:focus {
+        background-color: #fff;
+    }
+
+    .second-bar-item.active {
+        color: #fff;
+        background-color: hsl(135.69deg 54.11% 60.53%) !important;
+    }
+
+/*.sidebar-item:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 10%;
+  width: 80%;
+  height: 1px;
+  background-color: hsl(265, 100%, 46%);
+}*/
+
+    .second-bar-item:last-child:after {
+        display: none;
+    }
+
+.download {
+    border: none;
+    outline: none;
+    background: #00B280;
+    font-size: 20px;
+    color: white;
+    padding: 10px 40px;
+    margin-top: -5px;
+}
+
+.slider-container {
+  grid-area: slider;
+  padding: 2rem;
+  margin-top: -2rem;
+}
+
+.slider {
+  width: 100%;
+  cursor: pointer;
+}
+
+
+/* SecondBar.css */
+
+.second-bar {
+    background-color: #00B280; /* Dark background color to match the navbar */
+    color: white;
+    height: 57px;
+    display: flex;
+    align-items: center;
+    position: fixed;
+    top: 62px; /* Adjust according to the height of the main navbar */
+    width: 100%;
+    z-index: 1; /*Ensure it appears above other content */
+    left: 0;
+    padding: 0 15px;
+}
+
+    .second-bar a {
+        color: rgba(255, 255, 255, 0.75);
+        text-decoration: none;
+        margin-right: 20px;
+    }
+
+        .second-bar a:hover {
+            color: white;
+        }

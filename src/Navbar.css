@@ -1,0 +1,29 @@
+/* Navbar.css */
+
+/* Style for navbar items */
+.navbar-nav .nav-link {
+    color: #fff;
+    padding: 0.5rem 1rem;
+}
+
+    /* Style for active navbar items */
+    .navbar-nav .nav-link.active,
+    .navbar-nav .nav-link:hover {
+        color: #ffc107;
+    }
+
+/* Style for navbar toggler icon */
+.navbar-toggler-icon {
+    color: #fff;
+}
+
+/* Style for dropdown items */
+.dropdown-menu {
+    background-color: #fff; /* Dark background color */
+}
+
+    /* Style for dropdown items on hover */
+    .dropdown-menu .dropdown-item:hover {
+        background-color: #212529; /* Darker background color on hover */
+        color: #ffc107; /* Yellow text on hover */
+    }
