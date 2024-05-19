@@ -152,6 +152,100 @@ const DEFAULT_OPTIONS: OptionsType[] = [
         },
         unit: '',
     },
+    {
+        name: 'Vibrance',
+        property: 'vibrance',
+        value: 0,
+        range: {
+            min: -100,
+            max: 100,
+        },
+        unit: '',
+    },
+    {
+        name: 'Exposure',
+        property: 'exposure',
+        value: 0,
+        range: { min: -100, max: 100 },
+        unit: '',
+    },
+    {
+        name: 'Temperature',
+        property: 'temperature',
+        value: 0,
+        range: { min: -100, max: 100 },
+        unit: '',
+    },
+    {
+        name: 'Tint',
+        property: 'tint',
+        value: 0,
+        range: {
+            min: -100,
+            max: 100,
+        },
+        unit: '',
+    },
+    {
+        name: 'Highlights',
+        property: 'highlights',
+        value: 0,
+        range: {
+            min: -100,
+            max: 100,
+        },
+        unit: '%',
+    },
+    {
+        name: 'Clarity',
+        property: 'clarity',
+        value: 0,
+        range: {
+            min: -100,
+            max: 100,
+        },
+        unit: '',
+    },
+    {
+        name: 'Noise Reduction',
+        property: 'noiseReduction',
+        value: 0,
+        range: {
+            min: 0,
+            max: 100,
+        },
+        unit: '',
+    },
+    {
+        name: 'Vignette',
+        property: 'vignette',
+        value: 0,
+        range: {
+            min: -100,
+            max: 100,
+        },
+        unit: '%',
+    },
+    {
+        name: 'Saturation Adjustments',
+        property: 'saturationAdjustments',
+        value: 0,
+        range: {
+            min: -100,
+            max: 100,
+        },
+        unit: '',
+    },
+    {
+        name: 'Color Balance',
+        property: 'colorBalance',
+        value: 0,
+        range: {
+            min: -100,
+            max: 100,
+        },
+        unit: '',
+    },
 ];
 
 export interface OptionsType {
@@ -209,25 +303,78 @@ function App() {
         const shadowBlur = options.find(option => option.property === 'shadowBlur')?.value || 0;
         const shadowColor = options.find(option => option.property === 'shadowColor')?.value || '#000000';
         const sharpen = options.find(option => option.property === 'sharpen')?.value || 100;
+        const vibrance = options.find(option => option.property === 'vibrance')?.value || 0;
+        const temperature = options.find(option => option.property === 'temperature')?.value || 0;
 
         const filters = options.map((option) => {
-            if (['shadowX', 'shadowY', 'shadowBlur', 'shadowColor', 'sharpen'].includes(option.property)) {
-                return null;
+            switch (option.property) {
+                case 'brightness':
+                case 'contrast':
+                case 'saturate':
+                case 'grayscale':
+                case 'sepia':
+                case 'hue-rotate':
+                case 'blur':
+                case 'invert':
+                case 'opacity':
+                    return `${option.property}(${option.value}${option.unit})`;
+                default:
+                    return null;
             }
-            return `${option.property}(${option.value}${option.unit})`;
         }).filter(Boolean);
 
-        if (sharpen !== 100) {
-            filters.push(`contrast(${sharpen}%)`);
-        }
-
         const shadowFilter = `drop-shadow(${shadowX}px ${shadowY}px ${shadowBlur}px ${shadowColor})`;
+        const sharpenFilter = `contrast(${sharpen}%)`;
+        // Add other special filters...
 
         return {
-            filter: [...filters, shadowFilter].join(' '),
+            filter: [...filters, shadowFilter, sharpenFilter].join(' '),
+            vibrance: typeof vibrance === 'number' ? vibrance : 0,
+            temperature: typeof temperature === 'number' ? temperature : 0,
             backgroundImage: !isTiff ? `url(${image})` : '',
         };
     }, [options, isTiff, image]);
+
+    // Vibrance adjustment logic
+    const applyVibrance = (imageData: ImageData, vibrance: number): ImageData => {
+        const data = imageData.data;
+        for (let i = 0; i < data.length; i += 4) {
+            let r = data[i];
+            let g = data[i + 1];
+            let b = data[i + 2];
+
+            let max = Math.max(r, g, b);
+            let avg = (r + g + b) / 3;
+            let amt = ((Math.abs(max - avg) * 2 / 255) * vibrance) / 100;
+
+            if (r !== max) data[i] += (max - r) * amt;
+            if (g !== max) data[i + 1] += (max - g) * amt;
+            if (b !== max) data[i + 2] += (max - b) * amt;
+        }
+        return imageData;
+    };
+
+    // Exposure adjustment logic
+    const applyExposure = (imageData: ImageData, exposure: number): ImageData => {
+        const data = imageData.data;
+        const factor = Math.pow(2, exposure / 100); // Adjust exposure factor
+        for (let i = 0; i < data.length; i += 4) {
+            data[i] = Math.min(255, data[i] * factor);       // Red
+            data[i + 1] = Math.min(255, data[i + 1] * factor); // Green
+            data[i + 2] = Math.min(255, data[i + 2] * factor); // Blue
+        }
+        return imageData;
+    };
+
+    // Temperature adjustment logic
+    const applyTemperature = (imageData: ImageData, temperature: number): ImageData => {
+        const data = imageData.data;
+        for (let i = 0; i < data.length; i += 4) {
+            data[i] = Math.min(255, data[i] + temperature);       // Red
+            data[i + 2] = Math.min(255, data[i + 2] - temperature); // Blue
+        }
+        return imageData;
+    };
 
     const downloadImage = () => {
         htmlToImage
@@ -287,16 +434,12 @@ function App() {
                     canvas.width = imageData.width;
                     canvas.height = imageData.height;
 
-                    // Convert imageData to Uint8ClampedArray
                     const clampedArray = new Uint8ClampedArray(imageData.buffer);
 
-                    // Create ImageData object
                     const imageDataObj = new ImageData(clampedArray, imageData.width, imageData.height);
 
-                    // Clear canvas before rendering
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                    // Render image data on canvas
                     ctx.putImageData(imageDataObj, 0, 0);
                 }
             }
@@ -311,24 +454,51 @@ function App() {
         if (canvas) {
             const ctx = canvas.getContext('2d');
             if (ctx) {
-                ctx.filter = applyFilters().filter;
-            }
+                const { filter, vibrance, temperature } = applyFilters();
+                const exposure = Number(options.find(option => option.property === 'exposure')?.value) || 0;
 
-            if (!isTiff && image) {
-                const img = new Image();
-                img.src = image;
-                img.onload = () => {
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    if (ctx) {
-                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.filter = filter;
+
+                if (!isTiff && image) {
+                    const img = new Image();
+                    img.src = image;
+                    img.onload = () => {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
                         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        ctx.filter = applyFilters().filter;
+                        if (vibrance !== 0) {
+                            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                            const adjustedData = applyVibrance(imageData, vibrance);
+                            ctx.putImageData(adjustedData, 0, 0);
+                        }
+                        if (exposure !== 0) {
+                            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                            const adjustedData = applyExposure(imageData, exposure);
+                            ctx.putImageData(adjustedData, 0, 0);
+                        }
+                        if (temperature !== 0) {
+                            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                            const adjustedData = applyTemperature(imageData, temperature);
+                            ctx.putImageData(adjustedData, 0, 0);
+                        }
+                    };
+                } else if (isTiff && canvas) {
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const adjustedData = applyVibrance(imageData, vibrance);
+                    ctx.putImageData(adjustedData, 0, 0);
+
+                    if (exposure !== 0) {
+                        const adjustedData = applyExposure(imageData, exposure);
+                        ctx.putImageData(adjustedData, 0, 0);
                     }
-                };
+                    if (temperature !== 0) {
+                        const adjustedData = applyTemperature(imageData, temperature);
+                        ctx.putImageData(adjustedData, 0, 0);
+                    }
+                }
             }
         }
-    }, [options, isTiff, image, applyFilters]);
+    }, [options, image, applyFilters, isTiff]);
 
     return (
         <div className="container">
@@ -347,15 +517,16 @@ function App() {
                 )}
             </div>
             <div className="second-bar">
-                {options?.map((option, index) => (
-                    <SidebarItem
-                        key={index}
-                        name={option.name}
-                        active={index === selectedOptionIndex}
-                        handleClick={() => setSelectedOptionIndex(index)}
-                    />
-                ))}
-                
+                <div className="sidebar-items-container">
+                    {options?.map((option, index) => (
+                        <SidebarItem
+                            key={index}
+                            name={option.name}
+                            active={index === selectedOptionIndex}
+                            handleClick={() => setSelectedOptionIndex(index)}
+                        />
+                    ))}
+                </div>
             </div>
             <div className="sidebar">
                 <button className="download" onClick={downloadImage}>
@@ -381,8 +552,6 @@ function App() {
                         onChange={handleColorChange}
                     />
                 )}
-
-                
             </div>
         </div>
     );

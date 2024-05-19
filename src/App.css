@@ -43,7 +43,7 @@ code {
 .canvas-container {
     width: auto;
     height: fit-content;
-    margin-top: 6%;
+    margin-top: 15%;
 }
 .tiff-canvas {
     max-width: 100%; /* Limit canvas width */
@@ -161,15 +161,15 @@ code {
 /* SecondBar.css */
 
 .second-bar {
-    background-color: #00B280; /* Dark background color to match the navbar */
+    background-color: #00B280;
     color: white;
-    height: 57px;
+    height: 112px;
     display: flex;
     align-items: center;
     position: fixed;
-    top: 62px; /* Adjust according to the height of the main navbar */
+    top: 65px;
     width: 100%;
-    z-index: 1; /*Ensure it appears above other content */
+    z-index: 1;
     left: 0;
     padding: 0 15px;
 }
@@ -234,6 +234,7 @@ code {
     padding: 20px;
     border: 1px solid #ccc;
     height: fit-content;
+    margin-top: 50px;
 }
 
 .download {
@@ -253,3 +254,25 @@ code {
 .text-layer {
     margin-top: -115px;
 }
+.font-selector {
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-right: 10px;
+    width: 200px;
+}
+.bold-button, .italic-button {
+    padding: 5px 8px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    margin-right: 5px;
+    cursor: pointer;
+}
+
+    .bold-button.active, .italic-button.active {
+        font-weight: bold;
+        font-style: italic;
+        background-color: #eee;
+    }
